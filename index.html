@@ -1,3 +1,113 @@
+// ===============================
+// INTRO CYBERDINO 2077
+// ===============================
+
+let intro = true;
+let introFade = 0;
+
+
+// ===============================
+// FUNCTION INTRO
+// ===============================
+
+function renderIntro(){
+
+    // background
+    ctx.fillStyle = "#090712";
+    ctx.fillRect(0,0,LEBAR_LAYAR,TINGGI_LAYAR);
+
+    // stars
+    for(let i=0;i<70;i++){
+
+        ctx.fillStyle = "rgba(255,255,255,0.7)";
+
+        ctx.fillRect(
+            (i*97 + waktu_berjalan*0.2) % LEBAR_LAYAR,
+            (i*53) % TINGGI_LAYAR,
+            2,
+            2
+        );
+    }
+
+    // scanline
+    for(let i=0;i<TINGGI_LAYAR;i+=4){
+
+        ctx.fillStyle = "rgba(255,255,255,0.03)";
+        ctx.fillRect(0,i,LEBAR_LAYAR,1);
+    }
+
+    // fade
+    introFade += 0.01;
+
+    ctx.save();
+
+    ctx.globalAlpha = Math.min(introFade,1);
+
+    // glitch
+    let glitchX = Math.random()*6 - 3;
+
+    ctx.translate(glitchX,0);
+
+    // project name
+    ctx.fillStyle = "#00f0ff";
+    ctx.font = "bold 30px Courier New";
+
+    ctx.fillText(
+        "PROJECTWANN ARCADE",
+        LEBAR_LAYAR/2 - 190,
+        150
+    );
+
+    // presents
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "20px Courier New";
+
+    ctx.fillText(
+        "PRESENTS",
+        LEBAR_LAYAR/2 - 55,
+        200
+    );
+
+    // title
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = "#ff007f";
+
+    ctx.fillStyle = "#ff007f";
+    ctx.font = "bold 62px Courier New";
+
+    ctx.fillText(
+        "CYBERDINO",
+        LEBAR_LAYAR/2 - 220,
+        290
+    );
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 30px Courier New";
+
+    ctx.fillText(
+        "2077",
+        LEBAR_LAYAR/2 - 45,
+        340
+    );
+
+    // blinking text
+    if(Math.floor(Date.now()/500)%2){
+
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#00f0ff";
+
+        ctx.fillStyle = "#00f0ff";
+        ctx.font = "bold 20px Courier New";
+
+        ctx.fillText(
+            "TAP TO START",
+            LEBAR_LAYAR/2 - 85,
+            420
+        );
+    }
+
+    ctx.restore();
+}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -524,8 +634,20 @@ canvas{
         });
 
         function engineLoop() {
-            updateSiklusFisika();
-            renderKomponenGame();
+            if(intro){
+
+        renderIntro();
+
+    }
+    else{
+
+        updateSiklusFisika();
+        renderKomponenGame();
+
+    }
+
+    requestAnimationFrame(engineLoop);
+}
             requestAnimationFrame(engineLoop);
         }
         async function masukFullscreen(){
@@ -552,6 +674,21 @@ document.body.addEventListener(
     masukFullscreen,
     { once:true }
 );
+     window.addEventListener("click",()=>{
+
+    if(intro){
+        intro = false;
+    }
+
+});
+
+window.addEventListener("touchstart",()=>{
+
+    if(intro){
+        intro = false;
+    }
+
+});  
         engineLoop();
     </script>
 </body>
