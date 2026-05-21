@@ -79,6 +79,12 @@
         let partikel_roket = [];
         let partikel_ledakan = [];
 
+        // UTILITIES PENYELAMAT GAME (YANG BIKIN EROR SEBELUMNYA)
+        function randomRange(min, max) { return min + Math.random() * (max - min); }
+        function cekTabrakan(r1, r2) {
+            return r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+        }
+
         // AUDIO GENERATOR
         let audioCtx = null;
         function bunyi(freq, type, duration, gainStart) {
@@ -98,11 +104,6 @@
         let data_gedung = [];
         for (let i = 0; i < 10; i++) {
             data_gedung.push({ x: i * 180, w: 100 + Math.random()*50, h: 180 + Math.random()*100 });
-        }
-
-        // TABRAKAN
-        function cekTabrakan(r1, r2) {
-            return r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
         }
 
         function resetGame() {
@@ -160,7 +161,7 @@
             if (cx >= 540 && cx <= 600 && cy >= 180 && cy <= 240) { // Kanan
                 id_menu = id_menu >= database_karakter.length - 1 ? 0 : id_menu + 1; bunyi(600, "sine", 0.05, 0.05);
             }
-            if (cx >= 280 && cx <= 520 && cy >= 295 && cy <= 345) { // Tombol Tengah Buy/Equip
+            if (cx >= 280 && cx <= 520 && cy >= 295 && cy <= 345) { // Tombol Beli
                 let punya = daftar_kepemilikan[id_menu];
                 let item = database_karakter[id_menu];
                 if (punya) {
@@ -172,7 +173,7 @@
                     localStorage.setItem("p_wann_active_id", id_aktif);
                     bunyi(550, "triangle", 0.2, 0.12);
                 } else {
-                    bunyi(100, "sawtooth", 0.2, 0.15); // Gagal koin zonk
+                    bunyi(100, "sawtooth", 0.2, 0.15); // Gagal
                 }
             }
         });
@@ -261,26 +262,24 @@
                 ctx.fillStyle = "#1e1e38";
             });
 
-            // ==========================================
-            // KAIJU VS ULTRAMAN BERWARNA (Skor >= 100)
-            // ==========================================
+            // KAIJU VS ULTRAMAN (Muncul setelah skor 100)
             if ((status_layar === "BERMAIN" || status_layar === "GAMEOVER") && skor >= 100) {
                 let kx = 550 + Math.sin(waktu_berjalan*0.05)*5;
                 let ux = 460 + Math.cos(waktu_berjalan*0.06)*4;
 
-                // Kaiju (Hijau Tua, Mata Merah, Duri Oranye)
+                // Kaiju
                 ctx.fillStyle = "#1e4d2b"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
                 ctx.fillRect(kx, y_tanah - 110, 60, 110); ctx.strokeRect(kx, y_tanah - 110, 60, 110);
-                ctx.fillStyle = "#ff6e00"; ctx.fillRect(kx + 55, y_tanah - 90, 10, 15); ctx.fillRect(kx + 55, y_tanah - 60, 10, 15); // Duri
-                ctx.fillStyle = "#ff0055"; ctx.fillRect(kx + 10, y_tanah - 100, 8, 8); // Mata
+                ctx.fillStyle = "#ff6e00"; ctx.fillRect(kx + 55, y_tanah - 90, 10, 15); ctx.fillRect(kx + 55, y_tanah - 60, 10, 15);
+                ctx.fillStyle = "#ff0055"; ctx.fillRect(kx + 10, y_tanah - 100, 8, 8);
 
-                // Ultraman (Perak, Pola Merah, Mata Kuning, Timer Cyan)
+                // Ultraman
                 ctx.fillStyle = "#dcdde1"; ctx.fillRect(ux, y_tanah - 120, 45, 120); ctx.strokeRect(ux, y_tanah - 120, 45, 120);
-                ctx.fillStyle = "#c23616"; ctx.fillRect(ux + 5, y_tanah - 80, 15, 80); ctx.fillRect(ux + 25, y_tanah - 80, 15, 80); // Pola Merah
-                ctx.fillStyle = "#f1c40f"; ctx.fillRect(ux + 25, y_tanah - 112, 10, 12); // Mata Kuning
-                ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(ux + 22, y_tanah - 85, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke(); // Timer
+                ctx.fillStyle = "#c23616"; ctx.fillRect(ux + 5, y_tanah - 80, 15, 80); ctx.fillRect(ux + 25, y_tanah - 80, 15, 80);
+                ctx.fillStyle = "#f1c40f"; ctx.fillRect(ux + 25, y_tanah - 112, 10, 12);
+                ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(ux + 22, y_tanah - 85, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
-                // Efek Tembakan Specium Ray
+                // Laser Ultraman
                 if (waktu_berjalan % 120 > 80) {
                     ctx.fillStyle = "#00ffff"; ctx.fillRect(ux + 40, y_tanah - 88, kx - ux - 35, 6);
                     ctx.fillStyle = "#fff"; ctx.fillRect(ux + 40, y_tanah - 86, kx - ux - 35, 2);
@@ -292,30 +291,25 @@
             ctx.strokeStyle = "#000"; ctx.lineWidth = 4;
             ctx.beginPath(); ctx.moveTo(0, y_tanah); ctx.lineTo(LEBAR_LAYAR, y_tanah); ctx.stroke();
 
-            // MENU LAYERING / TOKO STORE
+            // MENU TOKO
             if (status_layar === "MENU") {
                 ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, 0, LEBAR_LAYAR, TINGGI_LAYAR);
                 ctx.fillStyle = "#d81b60"; ctx.font = "bold 38px Courier New"; ctx.fillText("PROJECTWANN MECHA RACE", 160, 60);
 
-                // Kotak Toko
                 ctx.fillStyle = "#2c3e50"; ctx.strokeStyle = "#000"; ctx.lineWidth = 4;
                 ctx.fillRect(280, 100, 240, 180); ctx.strokeRect(280, 100, 240, 180);
 
-                // Menggambar Mecha di Toko
                 let current = database_karakter[id_menu];
                 ctx.fillStyle = current.warna; ctx.fillRect(375, 140, 50, 50); ctx.strokeRect(375, 140, 50, 50);
                 ctx.fillStyle = current.aksen; ctx.fillRect(405, 150, 10, 10);
 
-                // Teks Mecha
                 ctx.fillStyle = "#fff"; ctx.font = "bold 16px Courier New";
                 ctx.fillText(current.nama, 400 - ctx.measureText(current.nama).width/2, 225);
                 ctx.fillStyle = current.tipe === "SPESIAL" ? "#ff6e00" : "#00acc1";
                 ctx.fillText(`CLASS: ${current.tipe}`, 400 - ctx.measureText(`CLASS: ${current.tipe}`).width/2, 250);
 
-                // Panah Navigasi
                 ctx.fillStyle = "#fff"; ctx.font = "bold 36px Courier New"; ctx.fillText("◀", 215, 210); ctx.fillText("▶", 550, 210);
 
-                // Status Tombol Tengah Beli / Pakai
                 let owned = daftar_kepemilikan[id_menu];
                 if (owned) {
                     ctx.fillStyle = id_menu === id_aktif ? "#2ecc71" : "#f1c40f";
@@ -331,15 +325,13 @@
                 ctx.fillStyle = "#fff"; ctx.font = "14px Courier New"; ctx.fillText("PRESS [JUMP] BUTTON TO START GAME", 260, 390);
             }
 
-            // PLAYING GRAPHICS
+            // GAMEPLAY VISUAL
             if (status_layar === "BERMAIN" || status_layar === "GAMEOVER") {
-                // Gambar Koin Jalanan
                 ctx.fillStyle = "#f1c40f"; ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
                 daftar_koin_jalan.forEach(c => {
                     ctx.beginPath(); ctx.arc(c.x + 10, c.y + 10, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
                 });
 
-                // Gambar Rintangan
                 ctx.fillStyle = "#d81b60"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
                 daftar_rintangan.forEach(obs => {
                     if (obs.tipe === "laser") {
@@ -351,21 +343,17 @@
                     }
                 });
 
-                // Gambar Jet Particles
                 partikel_roket.forEach(p => { ctx.fillStyle = "#ff6e00"; ctx.fillRect(p.x, p.y, p.life/2, p.life/2); });
 
-                // Gambar Player Dino Mecha Aktif
                 if (status_layar === "BERMAIN") {
                     let mecha = database_karakter[id_aktif];
                     ctx.fillStyle = mecha.warna; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
                     ctx.fillRect(dino_x, dino_y, dino_w, dino_h); ctx.strokeRect(dino_x, dino_y, dino_w, dino_h);
-                    ctx.fillStyle = mecha.aksen; ctx.fillRect(dino_x + (menunduk?30:25), dino_y + 10, 10, 10); // Kaca Kepala
+                    ctx.fillStyle = mecha.aksen; ctx.fillRect(dino_x + (menunduk?30:25), dino_y + 10, 10, 10);
                 } else {
-                    // Partikel Hancur Pas Kalah
                     ctx.fillStyle = "#ff6e00"; partikel_ledakan.forEach(p => { ctx.fillRect(p.x, p.y, 6, 6); });
                 }
 
-                // HUD Nilai Skor Jarak & Koin
                 ctx.fillStyle = "#00acc1"; ctx.font = "bold 18px Courier New"; ctx.fillText(`STEPS: ${String(skor).padStart(4, '0')} m`, 25, 40);
                 ctx.fillStyle = "#f1c40f"; ctx.fillText(`🪙 COINS: ${total_koin}`, 25, 65);
                 ctx.fillStyle = "#7882a0"; ctx.fillText(`MAX: ${String(skor_tertinggi).padStart(4, '0')} m`, 25, 90);
@@ -383,10 +371,7 @@
         }
 
         function engineLoop() {
-            try {
-                updateSiklus();
-                renderGame();
-            } catch(e) {}
+            try { updateSiklus(); renderGame(); } catch(e) {}
             requestAnimationFrame(engineLoop);
         }
         engineLoop();
