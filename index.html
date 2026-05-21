@@ -5,376 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ProjectWann Mecha Race</title>
     <style>
-        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
-        body { background-color: #0d0c1d; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        #gameContainer { position: relative; width: 100%; max-width: 800px; aspect-ratio: 800 / 450; background-color: #111; border: 4px solid #000; box-shadow: 10px 10px 0px rgba(0,0,0,0.3); }
+        * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
+        body { background-color: #0d0c1d; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        #gameContainer { position: relative; width: 100%; max-width: 800px; aspect-ratio: 800 / 450; background-color: #111; border: 4px solid #000; }
         canvas { width: 100%; height: 100%; display: block; }
-        #mobileControls { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 15px; gap: 20px; }
-        .btn { flex: 1; height: 65px; background: #1a1a2e; border: 3px solid #000; border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; font-family: inherit; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0px #000; }
-        #btnDuck { background: #34495e; }
-        #btnJump { background: #d81b60; }
-        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+        #controls { display: flex; width: 100%; max-width: 800px; gap: 10px; padding: 10px; }
+        .btn { flex: 1; height: 60px; background: #2c3e50; color: #fff; font-weight: bold; border: 2px solid #000; }
     </style>
 </head>
 <body>
-
-    <div id="gameContainer">
-        <canvas id="gameCanvas" width="800" height="450"></canvas>
+    <div id="gameContainer"><canvas id="gameCanvas" width="800" height="450"></canvas></div>
+    <div id="controls">
+        <button class="btn" id="btnDuck">TUNDUK</button>
+        <button class="btn" id="btnJump">LOMPAT</button>
     </div>
-
-    <div id="mobileControls">
-        <button class="btn" id="btnDuck">TUNDUK (HOLD)</button>
-        <button class="btn" id="btnJump">LOMPAT (TAP)</button>
-    </div>
-
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-
-        const LEBAR_LAYAR = 800;
-        const TINGGI_LAYAR = 450;
-        const y_tanah = TINGGI_LAYAR - 100;
-
-        // STATE UTAMA
-        let status_layar = "MENU";
-        let skor = 0;
-        let skor_jarak = 0;
-        let skor_tertinggi = 0;
-        let kecepatan_game = 5.0;
-        let waktu_berjalan = 0;
-        let total_koin = parseInt(localStorage.getItem("p_wann_koin")) || 0;
-
-        // DATA SKIN TOKO (10 Mecha)
-        let daftar_kepemilikan = JSON.parse(localStorage.getItem("p_wann_skins")) || [true, false, false, false, false, false, false, false, false, false];
-        let id_aktif = parseInt(localStorage.getItem("p_wann_active_id")) || 0;
-        let id_menu = id_aktif;
-
-        const database_karakter = [
-            { id: 0, nama: "Dino Steel", harga: 0, tipe: "Reguler", warna: "#bdc3c7", aksen: "#00acc1" },
-            { id: 1, nama: "Neon Viper", harga: 50, tipe: "Reguler", warna: "#2ecc71", aksen: "#d81b60" },
-            { id: 2, nama: "Mecha Crimson", harga: 100, tipe: "Reguler", warna: "#e74c3c", aksen: "#2c3e50" },
-            { id: 3, nama: "Cyber Panther", harga: 150, tipe: "Reguler", warna: "#34495e", aksen: "#3498db" },
-            { id: 4, nama: "Mecha Bunny", harga: 200, tipe: "Reguler", warna: "#ecf0f1", aksen: "#ff79c6" },
-            { id: 5, nama: "Robo Shark", harga: 250, tipe: "Reguler", warna: "#1abc9c", aksen: "#e67e22" },
-            { id: 6, nama: "Shadow Wolf", harga: 300, tipe: "Reguler", warna: "#2c3e50", aksen: "#e74c3c" },
-            { id: 7, nama: "Mecha Gundam", harga: 500, tipe: "SPESIAL", warna: "#3498db", aksen: "#f1c40f" },
-            { id: 8, nama: "Cyber Shinobi", harga: 750, tipe: "SPESIAL", warna: "#2b2b2b", aksen: "#d81b60" },
-            { id: 9, nama: "The Wann-Bot", harga: 1000, tipe: "SPESIAL", warna: "#9b59b6", aksen: "#00acc1" }
-        ];
-
-        // DINO PHYSICS
-        const dino_x = 90;
-        let dino_y = y_tanah - 56;
-        let dino_w = 50;
-        let dino_h = 56;
-        let kecepatan_y = 0;
-        let gravitasi = 0.85;
-        let kekuatan_lompat = -14.5;
-        let bisa_lompat = true;
-        let menunduk = false;
-
-        // OBJEK JALANAN
-        let daftar_rintangan = [];
-        let daftar_koin_jalan = [];
-        let partikel_roket = [];
-        let partikel_ledakan = [];
-
-        // UTILITIES PENYELAMAT GAME (YANG BIKIN EROR SEBELUMNYA)
-        function randomRange(min, max) { return min + Math.random() * (max - min); }
-        function cekTabrakan(r1, r2) {
-            return r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
-        }
-
-        // AUDIO GENERATOR
-        let audioCtx = null;
-        function bunyi(freq, type, duration, gainStart) {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                let osc = audioCtx.createOscillator();
-                let gainNode = audioCtx.createGain();
-                osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-                osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(gainStart, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                osc.start(); osc.stop(audioCtx.currentTime + duration);
-            } catch(e){}
-        }
-
-        // GENERATE BACKGROUND GEDUNG
-        let data_gedung = [];
-        for (let i = 0; i < 10; i++) {
-            data_gedung.push({ x: i * 180, w: 100 + Math.random()*50, h: 180 + Math.random()*100 });
-        }
-
-        function resetGame() {
-            daftar_rintangan = [{ x: LEBAR_LAYAR + 100, y: y_tanah - 50, w: 25, h: 50, tipe: "laser" }];
-            daftar_koin_jalan = []; partikel_ledakan = []; partikel_roket = [];
-            skor_jarak = 0; skor = 0; kecepatan_game = 5.0;
-            menunduk = false; dino_h = 56; dino_y = y_tanah - 56; kecepatan_y = 0;
-        }
-
-        function aksiLompat() {
-            if (status_layar === "MENU") {
-                resetGame(); status_layar = "BERMAIN"; bunyi(500, "triangle", 0.15, 0.1); return;
-            }
-            if (status_layar === "GAMEOVER") {
-                status_layar = "MENU"; bunyi(300, "sine", 0.05, 0.1); return;
-            }
-            if (status_layar === "BERMAIN" && bisa_lompat && !menunduk) {
-                kecepatan_y = kekuatan_lompat; bisa_lompat = false; bunyi(250, "triangle", 0.12, 0.15);
-            }
-        }
-
-        function aksiTunduk(isTunduk) {
-            if (status_layar !== "BERMAIN" || !bisa_lompat) return;
-            menunduk = isTunduk;
-            dino_h = isTunduk ? 34 : 56;
-            dino_y = y_tanah - dino_h;
-        }
-
-        // INTERAKSI TOMBOL & KEYBOARD
-        document.getElementById("btnJump").addEventListener("mousedown", (e) => { e.preventDefault(); aksiLompat(); });
-        document.getElementById("btnJump").addEventListener("touchstart", (e) => { e.preventDefault(); aksiLompat(); });
-        document.getElementById("btnDuck").addEventListener("mousedown", (e) => { e.preventDefault(); aksiTunduk(true); });
-        document.getElementById("btnDuck").addEventListener("touchstart", (e) => { e.preventDefault(); aksiTunduk(true); });
-        document.getElementById("btnDuck").addEventListener("mouseup", (e) => { e.preventDefault(); aksiTunduk(false); });
-        document.getElementById("btnDuck").addEventListener("touchend", (e) => { e.preventDefault(); aksiTunduk(false); });
-
-        window.addEventListener("keydown", (e) => {
-            if (e.code === "Space" || e.code === "ArrowUp") aksiLompat();
-            if (e.code === "ArrowDown") aksiTunduk(true);
-        });
-        window.addEventListener("keyup", (e) => {
-            if (e.code === "ArrowDown") aksiTunduk(false);
-        });
-
-        // REAKSI KLIK MENU TOKO
-        canvas.addEventListener("click", (e) => {
-            if (status_layar !== "MENU") return;
-            const rect = canvas.getBoundingClientRect();
-            const cx = ((e.clientX - rect.left) / rect.width) * LEBAR_LAYAR;
-            const cy = ((e.clientY - rect.top) / rect.height) * TINGGI_LAYAR;
-
-            if (cx >= 200 && cx <= 260 && cy >= 180 && cy <= 240) { // Kiri
-                id_menu = id_menu <= 0 ? database_karakter.length - 1 : id_menu - 1; bunyi(600, "sine", 0.05, 0.05);
-            }
-            if (cx >= 540 && cx <= 600 && cy >= 180 && cy <= 240) { // Kanan
-                id_menu = id_menu >= database_karakter.length - 1 ? 0 : id_menu + 1; bunyi(600, "sine", 0.05, 0.05);
-            }
-            if (cx >= 280 && cx <= 520 && cy >= 295 && cy <= 345) { // Tombol Beli
-                let punya = daftar_kepemilikan[id_menu];
-                let item = database_karakter[id_menu];
-                if (punya) {
-                    id_aktif = id_menu; localStorage.setItem("p_wann_active_id", id_aktif); bunyi(450, "triangle", 0.1, 0.1);
-                } else if (total_koin >= item.harga) {
-                    total_koin -= item.harga; daftar_kepemilikan[id_menu] = true; id_aktif = id_menu;
-                    localStorage.setItem("p_wann_koin", total_koin);
-                    localStorage.setItem("p_wann_skins", JSON.stringify(daftar_kepemilikan));
-                    localStorage.setItem("p_wann_active_id", id_aktif);
-                    bunyi(550, "triangle", 0.2, 0.12);
-                } else {
-                    bunyi(100, "sawtooth", 0.2, 0.15); // Gagal
-                }
-            }
-        });
-
-        // LOOP ENGINE UTAMA
-        function updateSiklus() {
-            waktu_berjalan++;
-            if (status_layar !== "BERMAIN") {
-                if (status_layar === "GAMEOVER") {
-                    partikel_ledakan.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.2; });
-                }
-                return;
-            }
-
-            let speed_efektif = kecepatan_game + (skor >= 200 ? 3.2 : 0);
-            skor_jarak += speed_efektif * 0.02;
-            skor = Math.floor(skor_jarak);
-
-            if (skor > 0 && skor % 100 === 0 && kecepatan_game < 12) {
-                kecepatan_game += 0.05;
-            }
-
-            // Fisika Player
-            kecepatan_y += gravitasi; dino_y += kecepatan_y;
-            if (dino_y >= y_tanah - dino_h) { dino_y = y_tanah - dino_h; kecepatan_y = 0; bisa_lompat = true; }
-
-            // Jetpack effect
-            if (dino_y < y_tanah - dino_h && waktu_berjalan % 3 === 0) {
-                partikel_roket.push({ x: dino_x + 5, y: dino_y + 30, vx: -randomRange(2,4), vy: randomRange(0,2), life: 10 });
-            }
-            for (let i = partikel_roket.length - 1; i >= 0; i--) {
-                let p = partikel_roket[i]; p.x += p.vx; p.y += p.vy; p.life--;
-                if (p.life <= 0) partikel_roket.splice(i, 1);
-            }
-
-            // Spawn & Gerak Koin
-            if (Math.random() < 0.012 && daftar_koin_jalan.length < 4) {
-                daftar_koin_jalan.push({ x: LEBAR_LAYAR + 40, y: y_tanah - 35 - Math.random()*50, w: 20, h: 20 });
-            }
-            for (let i = daftar_koin_jalan.length - 1; i >= 0; i--) {
-                let c = daftar_koin_jalan[i]; c.x -= speed_efektif;
-                if (c.x < -30) { daftar_koin_jalan.splice(i, 1); continue; }
-                if (cekTabrakan({ x: dino_x, y: dino_y, w: dino_w, h: dino_h }, c)) {
-                    total_koin++; localStorage.setItem("p_wann_koin", total_koin);
-                    bunyi(800, "sine", 0.05, 0.08); daftar_koin_jalan.splice(i, 1);
-                }
-            }
-
-            // Spawn & Gerak Rintangan
-            for (let i = daftar_rintangan.length - 1; i >= 0; i--) {
-                let obs = daftar_rintangan[i]; obs.x -= speed_efektif;
-                if (obs.x < -50) { daftar_rintangan.splice(i, 1); continue; }
-                if (cekTabrakan({ x: dino_x, y: dino_y, w: dino_w, h: dino_h }, obs)) {
-                    status_layar = "GAMEOVER"; bunyi(150, "sawtooth", 0.4, 0.25);
-                    if (skor > skor_tertinggi) skor_tertinggi = skor;
-                    for (let k = 0; k < 25; k++) {
-                        partikel_ledakan.push({ x: dino_x + 25, y: dino_y + 25, vx: (Math.random()-0.5)*10, vy: -Math.random()*6 - 2 });
-                    }
-                }
-            }
-            if (daftar_rintangan.length < 2) {
-                let last = daftar_rintangan[daftar_rintangan.length - 1];
-                if (!last || last.x < LEBAR_LAYAR - randomRange(350, 500)) {
-                    let tipe = Math.random() > 0.4 ? "bawah" : "terbang";
-                    if (tipe === "bawah") {
-                        daftar_rintangan.push({ x: LEBAR_LAYAR + 50, y: y_tanah - 50, w: 24, h: 50, tipe: "laser" });
-                    } else {
-                        daftar_rintangan.push({ x: LEBAR_LAYAR + 50, y: y_tanah - 80, w: 40, h: 26, tipe: "drone" });
-                    }
-                }
-            }
-        }
-
-        function renderGame() {
-            ctx.fillStyle = "#0a0a16"; ctx.fillRect(0, 0, LEBAR_LAYAR, TINGGI_LAYAR);
-
-            // Render Background Gedung
-            ctx.fillStyle = "#1e1e38"; ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
-            let scroll_bg = (waktu_berjalan * 0.3) % 1800;
-            data_gedung.forEach((g, idx) => {
-                let gx = (idx * 180) - scroll_bg;
-                if (gx < -150) gx += 1800;
-                ctx.fillRect(gx, y_tanah - g.h, g.w, g.h); ctx.strokeRect(gx, y_tanah - g.h, g.w, g.h);
-                ctx.fillStyle = "#00ffcc";
-                ctx.fillRect(gx + 20, y_tanah - g.h + 30, 8, 20); ctx.fillRect(gx + 50, y_tanah - g.h + 30, 8, 20);
-                ctx.fillStyle = "#1e1e38";
-            });
-
-            // KAIJU VS ULTRAMAN (Muncul setelah skor 100)
-            if ((status_layar === "BERMAIN" || status_layar === "GAMEOVER") && skor >= 100) {
-                let kx = 550 + Math.sin(waktu_berjalan*0.05)*5;
-                let ux = 460 + Math.cos(waktu_berjalan*0.06)*4;
-
-                // Kaiju
-                ctx.fillStyle = "#1e4d2b"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
-                ctx.fillRect(kx, y_tanah - 110, 60, 110); ctx.strokeRect(kx, y_tanah - 110, 60, 110);
-                ctx.fillStyle = "#ff6e00"; ctx.fillRect(kx + 55, y_tanah - 90, 10, 15); ctx.fillRect(kx + 55, y_tanah - 60, 10, 15);
-                ctx.fillStyle = "#ff0055"; ctx.fillRect(kx + 10, y_tanah - 100, 8, 8);
-
-                // Ultraman
-                ctx.fillStyle = "#dcdde1"; ctx.fillRect(ux, y_tanah - 120, 45, 120); ctx.strokeRect(ux, y_tanah - 120, 45, 120);
-                ctx.fillStyle = "#c23616"; ctx.fillRect(ux + 5, y_tanah - 80, 15, 80); ctx.fillRect(ux + 25, y_tanah - 80, 15, 80);
-                ctx.fillStyle = "#f1c40f"; ctx.fillRect(ux + 25, y_tanah - 112, 10, 12);
-                ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(ux + 22, y_tanah - 85, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-
-                // Laser Ultraman
-                if (waktu_berjalan % 120 > 80) {
-                    ctx.fillStyle = "#00ffff"; ctx.fillRect(ux + 40, y_tanah - 88, kx - ux - 35, 6);
-                    ctx.fillStyle = "#fff"; ctx.fillRect(ux + 40, y_tanah - 86, kx - ux - 35, 2);
-                }
-            }
-
-            // Aspal Lintasan
-            ctx.fillStyle = "#111"; ctx.fillRect(0, y_tanah, LEBAR_LAYAR, 100);
-            ctx.strokeStyle = "#000"; ctx.lineWidth = 4;
-            ctx.beginPath(); ctx.moveTo(0, y_tanah); ctx.lineTo(LEBAR_LAYAR, y_tanah); ctx.stroke();
-
-            // MENU TOKO
-            if (status_layar === "MENU") {
-                ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, 0, LEBAR_LAYAR, TINGGI_LAYAR);
-                ctx.fillStyle = "#d81b60"; ctx.font = "bold 38px Courier New"; ctx.fillText("PROJECTWANN MECHA RACE", 160, 60);
-
-                ctx.fillStyle = "#2c3e50"; ctx.strokeStyle = "#000"; ctx.lineWidth = 4;
-                ctx.fillRect(280, 100, 240, 180); ctx.strokeRect(280, 100, 240, 180);
-
-                let current = database_karakter[id_menu];
-                ctx.fillStyle = current.warna; ctx.fillRect(375, 140, 50, 50); ctx.strokeRect(375, 140, 50, 50);
-                ctx.fillStyle = current.aksen; ctx.fillRect(405, 150, 10, 10);
-
-                ctx.fillStyle = "#fff"; ctx.font = "bold 16px Courier New";
-                ctx.fillText(current.nama, 400 - ctx.measureText(current.nama).width/2, 225);
-                ctx.fillStyle = current.tipe === "SPESIAL" ? "#ff6e00" : "#00acc1";
-                ctx.fillText(`CLASS: ${current.tipe}`, 400 - ctx.measureText(`CLASS: ${current.tipe}`).width/2, 250);
-
-                ctx.fillStyle = "#fff"; ctx.font = "bold 36px Courier New"; ctx.fillText("◀", 215, 210); ctx.fillText("▶", 550, 210);
-
-                let owned = daftar_kepemilikan[id_menu];
-                if (owned) {
-                    ctx.fillStyle = id_menu === id_aktif ? "#2ecc71" : "#f1c40f";
-                    let msg = id_menu === id_aktif ? "[ ACTIVE ]" : "[ EQUIP MECHA ]";
-                    ctx.fillText(msg, 400 - ctx.measureText(msg).width/2, 325);
-                } else {
-                    ctx.fillStyle = "#d81b60";
-                    let msg = `BUY: 🪙 ${current.harga}`;
-                    ctx.fillText(msg, 400 - ctx.measureText(msg).width/2, 325);
-                }
-
-                ctx.fillStyle = "#f1c40f"; ctx.font = "bold 18px Courier New"; ctx.fillText(`🪙 COINS: ${total_koin}`, 25, 40);
-                ctx.fillStyle = "#fff"; ctx.font = "14px Courier New"; ctx.fillText("PRESS [JUMP] BUTTON TO START GAME", 260, 390);
-            }
-
-            // GAMEPLAY VISUAL
-            if (status_layar === "BERMAIN" || status_layar === "GAMEOVER") {
-                ctx.fillStyle = "#f1c40f"; ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
-                daftar_koin_jalan.forEach(c => {
-                    ctx.beginPath(); ctx.arc(c.x + 10, c.y + 10, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        let status = "MENU", skor = 0, y_tanah = 350, dino_x = 90, dino_y = 294, dino_h = 56, vel_y = 0, menunduk = false;
+        let rintangan = [{x: 1200, y: 300, w: 25, h: 50}]; // Posisi rintangan awal JAUH di depan
+        
+        function loop() {
+            ctx.fillStyle = "#0a0a16"; ctx.fillRect(0,0,800,450);
+            if(status === "BERMAIN") {
+                skor++;
+                vel_y += 0.85; dino_y += vel_y;
+                if(dino_y > 350 - dino_h) { dino_y = 350 - dino_h; vel_y = 0; }
+                rintangan.forEach(r => {
+                    r.x -= 7;
+                    if(r.x < -50) r.x = 1200; // Reset rintangan jauh ke depan
+                    if(dino_x < r.x + r.w && dino_x + 50 > r.x && dino_y < r.y + r.h && dino_y + dino_h > r.y) status = "GAMEOVER";
                 });
-
-                ctx.fillStyle = "#d81b60"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
-                daftar_rintangan.forEach(obs => {
-                    if (obs.tipe === "laser") {
-                        ctx.fillStyle = "#d81b60"; ctx.fillRect(obs.x, obs.y, obs.w, obs.h); ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-                        ctx.fillStyle = "#fff"; ctx.fillRect(obs.x + 8, obs.y + 5, 8, obs.h - 10);
-                    } else {
-                        ctx.fillStyle = "#34495e"; ctx.fillRect(obs.x, obs.y, obs.w, obs.h); ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
-                        ctx.fillStyle = "#00ffff"; ctx.fillRect(obs.x + 5, obs.y + 8, 10, 10);
-                    }
-                });
-
-                partikel_roket.forEach(p => { ctx.fillStyle = "#ff6e00"; ctx.fillRect(p.x, p.y, p.life/2, p.life/2); });
-
-                if (status_layar === "BERMAIN") {
-                    let mecha = database_karakter[id_aktif];
-                    ctx.fillStyle = mecha.warna; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
-                    ctx.fillRect(dino_x, dino_y, dino_w, dino_h); ctx.strokeRect(dino_x, dino_y, dino_w, dino_h);
-                    ctx.fillStyle = mecha.aksen; ctx.fillRect(dino_x + (menunduk?30:25), dino_y + 10, 10, 10);
-                } else {
-                    ctx.fillStyle = "#ff6e00"; partikel_ledakan.forEach(p => { ctx.fillRect(p.x, p.y, 6, 6); });
-                }
-
-                ctx.fillStyle = "#00acc1"; ctx.font = "bold 18px Courier New"; ctx.fillText(`STEPS: ${String(skor).padStart(4, '0')} m`, 25, 40);
-                ctx.fillStyle = "#f1c40f"; ctx.fillText(`🪙 COINS: ${total_koin}`, 25, 65);
-                ctx.fillStyle = "#7882a0"; ctx.fillText(`MAX: ${String(skor_tertinggi).padStart(4, '0')} m`, 25, 90);
-
-                if (skor >= 200 && status_layar === "BERMAIN") {
-                    ctx.fillStyle = "#f1c40f"; ctx.font = "bold 16px Courier New"; ctx.fillText("⚡ SPEED BOOST ACTIVE! ⚡", 300, 45);
-                }
             }
-
-            if (status_layar === "GAMEOVER") {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.8)"; ctx.fillRect(0, 0, LEBAR_LAYAR, TINGGI_LAYAR);
-                ctx.fillStyle = "#d81b60"; ctx.font = "bold 36px Courier New"; ctx.fillText("CRITICAL REBOOT REQUIRED", 160, TINGGI_LAYAR/2 - 10);
-                ctx.fillStyle = "#00acc1"; ctx.font = "bold 16px Courier New"; ctx.fillText("> PRESS [JUMP BUTTON] TO RESTART <", 245, TINGGI_LAYAR/2 + 35);
-            }
+            // Draw Dino
+            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(dino_x, dino_y, 50, dino_h);
+            // Draw Rintangan
+            ctx.fillStyle = "#d81b60"; rintangan.forEach(r => ctx.fillRect(r.x, r.y, r.w, r.h));
+            // UI
+            ctx.fillStyle = "#fff"; ctx.font = "20px monospace"; ctx.fillText("SKOR: "+skor, 20, 30);
+            if(status !== "BERMAIN") ctx.fillText("TAP LOMPAT UNTUK START", 280, 225);
+            requestAnimationFrame(loop);
         }
-
-        function engineLoop() {
-            try { updateSiklus(); renderGame(); } catch(e) {}
-            requestAnimationFrame(engineLoop);
-        }
-        engineLoop();
+        document.getElementById("btnJump").onclick = () => { if(status==="MENU" || status==="GAMEOVER") { skor=0; rintangan[0].x=1200; status="BERMAIN"; } else vel_y = -14; };
+        document.getElementById("btnDuck").onmousedown = () => { menunduk=true; dino_h=34; dino_y=316; };
+        document.getElementById("btnDuck").onmouseup = () => { menunduk=false; dino_h=56; dino_y=294; };
+        loop();
     </script>
 </body>
 </html>
