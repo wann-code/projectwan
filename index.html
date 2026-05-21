@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CyberDino 2077: ProjectWann Fixed Edition</title>
+    <title>CyberDino 2077: ProjectWann Final Perfect</title>
     <style>
         * {
             box-sizing: border-box;
@@ -197,6 +197,7 @@
             osc1.start(); osc1.stop(waktu + 0.1);
 
             setTimeout(() => {
+                if (!audioCtx) return;
                 let osc2 = audioCtx.createOscillator();
                 let gain2 = audioCtx.createGain();
                 osc2.connect(gain2); gain2.connect(audioCtx.destination);
@@ -530,7 +531,7 @@
             if (status_layar === "BERMAIN" || status_layar === "GAMEOVER") {
                 daftar_koin_jalan.forEach(c => {
                     ctx.fillStyle = WARNA_KUNING; ctx.strokeStyle = WARNA_HITAM; ctx.lineWidth = 2.5;
-                    ctx.beginPath(); ctx.arc(c.x + 11, c.y + 11, 11, 0, Math.PI*2); ctx.fill(); stroke();
+                    ctx.beginPath(); ctx.arc(c.x + 11, c.y + 11, 11, 0, Math.PI*2); ctx.fill(); ctx.stroke(); // FIXED: Perbaikan syntax ctx.stroke() di baris ini
                     ctx.fillStyle = WARNA_HITAM; ctx.font = "bold 13px 'Courier New'"; ctx.fillText("C", c.x + 7, c.y + 15);
                 });
 
@@ -599,7 +600,6 @@
             if (skor >= 200) is_overdrive = true;
             else is_overdrive = false;
 
-            // Balanced Speed
             let speed_aktif = kecepatan_game + (is_overdrive ? 3.2 : 0);
             scroll_semesta += speed_aktif;
             skor_jarak += speed_aktif * 0.02;
@@ -708,11 +708,10 @@
 
         function memprosesAksiLompat() {
             if (status_layar === "MENU") {
-                // FIXED: Memperbaiki bug panggil variabel id_karakter_terpilih agar tidak freeze
                 id_character_di_menu = id_karakter_terpilih;
                 resetGameTotal();
                 status_layar = "BERMAIN";
-                mainkanSuaraSuksesBeli();
+                mainkanSuaraSuksesBeli(); 
                 return;
             }
             if (status_layar === "GAMEOVER") {
@@ -754,18 +753,21 @@
             const clickX = ((e.clientX - rect.left) / rect.width) * LEBAR_LAYAR;
             const clickY = ((e.clientY - rect.top) / rect.height) * TINGGI_LAYAR;
 
+            // Panah Kiri Toko
             if (clickX >= LEBAR_LAYAR/2 - 195 && clickX <= LEBAR_LAYAR/2 - 145 && clickY >= 180 && clickY <= 230) {
                 id_character_di_menu--;
                 if (id_character_di_menu < 0) id_character_di_menu = database_karakter.length - 1;
                 mainkanSuaraMenuKlik(); 
                 return;
             }
+            // Panah Kanan Toko
             if (clickX >= LEBAR_LAYAR/2 + 135 && clickX <= LEBAR_LAYAR/2 + 185 && clickY >= 180 && clickY <= 230) {
                 id_character_di_menu++;
                 if (id_character_di_menu >= database_karakter.length) id_character_di_menu = 0;
                 mainkanSuaraMenuKlik(); 
                 return;
             }
+            // Area Tombol Tengah Buy / Equip
             if (clickX >= LEBAR_LAYAR/2 - 120 && clickX <= LEBAR_LAYAR/2 + 120 && clickY >= 290 && clickY <= 340) {
                 let sudahPunya = daftar_kepemilikan[id_character_di_menu];
                 let infoKarakter = database_karakter[id_character_di_menu];
