@@ -3,52 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ProjectWann Mecha Race</title>
+    <title>ProjectWann Mecha Race - Fixed Start</title>
     <style>
-        * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
-        body { background-color: #0d0c1d; font-family: monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        #gameContainer { position: relative; width: 100%; max-width: 800px; aspect-ratio: 800 / 450; background-color: #111; border: 4px solid #000; }
+        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
+        body { background-color: #0d0c1d; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
+        #gameContainer { position: relative; width: 100%; max-width: 800px; aspect-ratio: 800 / 450; background-color: #111; border: 4px solid #000; box-shadow: 10px 10px 0px rgba(0,0,0,0.3); }
         canvas { width: 100%; height: 100%; display: block; }
-        #controls { display: flex; width: 100%; max-width: 800px; gap: 10px; padding: 10px; }
-        .btn { flex: 1; height: 60px; background: #2c3e50; color: #fff; font-weight: bold; border: 2px solid #000; }
+        #mobileControls { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 15px; gap: 20px; }
+        .btn { flex: 1; height: 65px; background: #1a1a2e; border: 3px solid #000; border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; font-family: inherit; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0px #000; }
+        #btnDuck { background: #34495e; }
+        #btnJump { background: #d81b60; }
+        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
     </style>
 </head>
 <body>
     <div id="gameContainer"><canvas id="gameCanvas" width="800" height="450"></canvas></div>
-    <div id="controls">
+    <div id="mobileControls">
         <button class="btn" id="btnDuck">TUNDUK</button>
         <button class="btn" id="btnJump">LOMPAT</button>
     </div>
+
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        let status = "MENU", skor = 0, y_tanah = 350, dino_x = 90, dino_y = 294, dino_h = 56, vel_y = 0, menunduk = false;
-        let rintangan = [{x: 1200, y: 300, w: 25, h: 50}]; // Posisi rintangan awal JAUH di depan
+        const LEBAR = 800, TINGGI = 450, Y_TANAH = 350;
+
+        let status = "MENU", skor = 0, koin = parseInt(localStorage.getItem("p_wann_koin")) || 0;
+        let dino = { x: 90, y: 294, w: 50, h: 56, velY: 0, menunduk: false };
+        let rintangan = [];
         
+        function resetGame() {
+            // FIX: Rintangan pertama ditaruh jauh di 1500 agar tidak langsung nabrak
+            rintangan = [{x: 1500, y: 300, w: 25, h: 50, tipe: "laser"}];
+            skor = 0; dino.y = 294;
+        }
+
         function loop() {
-            ctx.fillStyle = "#0a0a16"; ctx.fillRect(0,0,800,450);
+            ctx.fillStyle = "#0a0a16"; ctx.fillRect(0,0,LEBAR,TINGGI);
+            
             if(status === "BERMAIN") {
                 skor++;
-                vel_y += 0.85; dino_y += vel_y;
-                if(dino_y > 350 - dino_h) { dino_y = 350 - dino_h; vel_y = 0; }
+                dino.velY += 0.85; dino.y += dino.velY;
+                if(dino.y > 350 - dino.h) { dino.y = 350 - dino.h; dino.velY = 0; }
+                
                 rintangan.forEach(r => {
                     r.x -= 7;
-                    if(r.x < -50) r.x = 1200; // Reset rintangan jauh ke depan
-                    if(dino_x < r.x + r.w && dino_x + 50 > r.x && dino_y < r.y + r.h && dino_y + dino_h > r.y) status = "GAMEOVER";
+                    if(r.x < -50) r.x = 1000 + Math.random() * 500;
+                    if(dino.x < r.x + r.w && dino.x + dino.w > r.x && dino.y < r.y + r.h && dino.y + dino.h > r.y) status = "GAMEOVER";
                 });
             }
-            // Draw Dino
-            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(dino_x, dino_y, 50, dino_h);
-            // Draw Rintangan
+
+            // Draw
+            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
             ctx.fillStyle = "#d81b60"; rintangan.forEach(r => ctx.fillRect(r.x, r.y, r.w, r.h));
-            // UI
-            ctx.fillStyle = "#fff"; ctx.font = "20px monospace"; ctx.fillText("SKOR: "+skor, 20, 30);
-            if(status !== "BERMAIN") ctx.fillText("TAP LOMPAT UNTUK START", 280, 225);
+            ctx.fillStyle = "#fff"; ctx.fillText("SKOR: "+Math.floor(skor/10), 20, 30);
+            
+            if(status !== "BERMAIN") ctx.fillText("PRESS LOMPAT TO START", 300, 225);
             requestAnimationFrame(loop);
         }
-        document.getElementById("btnJump").onclick = () => { if(status==="MENU" || status==="GAMEOVER") { skor=0; rintangan[0].x=1200; status="BERMAIN"; } else vel_y = -14; };
-        document.getElementById("btnDuck").onmousedown = () => { menunduk=true; dino_h=34; dino_y=316; };
-        document.getElementById("btnDuck").onmouseup = () => { menunduk=false; dino_h=56; dino_y=294; };
+
+        document.getElementById("btnJump").onmousedown = () => { if(status!=="BERMAIN") { resetGame(); status="BERMAIN"; } else dino.velY = -14; };
+        document.getElementById("btnDuck").onmousedown = () => { dino.menunduk=true; dino.h=34; dino.y=316; };
+        document.getElementById("btnDuck").onmouseup = () => { dino.menunduk=false; dino.h=56; dino.y=294; };
+        
         loop();
     </script>
 </body>
