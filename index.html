@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CyberDino 2077: ProjectWann Final Perfect Fix</title>
+    <title>CyberDino 2077: ProjectWann Real Fixed</title>
     <style>
         * {
             box-sizing: border-box;
@@ -124,7 +124,7 @@
         // DATA CHARACTER SHOP
         let daftar_kepemilikan = JSON.parse(localStorage.getItem("p_wann_skins")) || [true, false, false, false, false, false, false, false, false, false];
         let id_karakter_terpilih = parseInt(localStorage.getItem("p_wann_active_id")) || 0;
-        let id_character_di_menu = id_karakter_terpilih;
+        let id_karakter_di_menu = id_karakter_terpilih; // FIX: Variabel konsisten pakai bahasa Indonesia
 
         const database_karakter = [
             { id: 0, nama: "Dino Steel", harga: 0, tipe: "Reguler", warna: "#bdc3c7", warnaAksen: "#00acc1" },
@@ -492,9 +492,10 @@
                 ctx.fillStyle = "#2c3e50"; ctx.lineWidth = 4; ctx.strokeStyle = WARNA_HITAM;
                 ctx.fillRect(LEBAR_LAYAR/2 - 130, 100, 260, 180); ctx.strokeRect(LEBAR_LAYAR/2 - 130, 100, 260, 180);
 
-                gambarModelKarakter(ctx, LEBAR_LAYAR/2 - 25, 180, id_character_di_menu, false, waktu_berjalan);
+                // FIX GOL: Variabel dipastikan memanggil id_karakter_di_menu murni
+                gambarModelKarakter(ctx, LEBAR_LAYAR/2 - 25, 180, id_karakter_di_menu, false, waktu_berjalan);
 
-                let mecha_skrg = database_karakter[id_character_di_menu];
+                let mecha_skrg = database_karakter[id_karakter_di_menu];
                 ctx.fillStyle = WARNA_PUTIH; ctx.font = "bold 18px 'Courier New'";
                 ctx.fillText(mecha_skrg.nama, LEBAR_LAYAR/2 - ctx.measureText(mecha_skrg.nama).width/2, 245);
                 
@@ -506,9 +507,9 @@
                 ctx.fillText("◀", LEBAR_LAYAR/2 - 175, 205);
                 ctx.fillText("▶", LEBAR_LAYAR/2 + 145, 205);
 
-                let sudahPunya = daftar_kepemilikan[id_character_di_menu];
+                let sudahPunya = daftar_kepemilikan[id_karakter_di_menu];
                 if (sudahPunya) {
-                    if (id_character_di_menu === id_karakter_terpilih) {
+                    if (id_karakter_di_menu === id_karakter_terpilih) {
                         ctx.fillStyle = "#2ecc71"; ctx.font = "bold 18px 'Courier New'";
                         ctx.fillText("[ MECHA SET ACTIVE ]", LEBAR_LAYAR/2 - 100, 315);
                     } else {
@@ -532,7 +533,7 @@
                 daftar_koin_jalan.forEach(c => {
                     ctx.fillStyle = WARNA_KUNING; ctx.strokeStyle = WARNA_HITAM; ctx.lineWidth = 2.5;
                     ctx.beginPath(); ctx.arc(c.x + 11, c.y + 11, 11, 0, Math.PI*2); ctx.fill(); 
-                    ctx.stroke(); // ⚡ DISINI FIX-NYA: Ditambah objek ctx di depannya! ⚡
+                    ctx.stroke(); 
                     ctx.fillStyle = WARNA_HITAM; ctx.font = "bold 13px 'Courier New'"; ctx.fillText("C", c.x + 7, c.y + 15);
                 });
 
@@ -710,7 +711,7 @@
 
         function memprosesAksiLompat() {
             if (status_layar === "MENU") {
-                id_character_di_menu = id_karakter_terpilih;
+                id_karakter_di_menu = id_karakter_terpilih; // FIX: Variabel konsisten
                 resetGameTotal();
                 status_layar = "BERMAIN";
                 mainkanSuaraSuksesBeli(); 
@@ -757,32 +758,32 @@
 
             // Panah Kiri Toko
             if (clickX >= LEBAR_LAYAR/2 - 195 && clickX <= LEBAR_LAYAR/2 - 145 && clickY >= 180 && clickY <= 230) {
-                id_character_di_menu--;
-                if (id_character_di_menu < 0) id_character_di_menu = database_karakter.length - 1;
+                id_karakter_di_menu--;
+                if (id_karakter_di_menu < 0) id_karakter_di_menu = database_karakter.length - 1;
                 mainkanSuaraMenuKlik(); 
                 return;
             }
             // Panah Kanan Toko
             if (clickX >= LEBAR_LAYAR/2 + 135 && clickX <= LEBAR_LAYAR/2 + 185 && clickY >= 180 && clickY <= 230) {
-                id_character_di_menu++;
-                if (id_character_di_menu >= database_karakter.length) id_character_di_menu = 0;
+                id_karakter_di_menu++;
+                if (id_karakter_di_menu >= database_karakter.length) id_karakter_di_menu = 0;
                 mainkanSuaraMenuKlik(); 
                 return;
             }
             // Area Tombol Tengah Buy / Equip
             if (clickX >= LEBAR_LAYAR/2 - 120 && clickX <= LEBAR_LAYAR/2 + 120 && clickY >= 290 && clickY <= 340) {
-                let sudahPunya = daftar_kepemilikan[id_character_di_menu];
-                let infoKarakter = database_karakter[id_character_di_menu];
+                let sudahPunya = daftar_kepemilikan[id_karakter_di_menu];
+                let infoKarakter = database_karakter[id_karakter_di_menu];
 
                 if (sudahPunya) {
-                    id_karakter_terpilih = id_character_di_menu;
+                    id_karakter_terpilih = id_karakter_di_menu;
                     localStorage.setItem("p_wann_active_id", id_karakter_terpilih);
                     mainkanSuaraSuksesBeli(); 
                 } else {
                     if (total_koin >= infoKarakter.harga) {
                         total_koin -= infoKarakter.harga;
-                        daftar_kepemilikan[id_character_di_menu] = true;
-                        id_karakter_terpilih = id_character_di_menu;
+                        daftar_kepemilikan[id_karakter_di_menu] = true;
+                        id_karakter_terpilih = id_karakter_di_menu;
                         localStorage.setItem("p_wann_koin", total_koin);
                         localStorage.setItem("p_wann_skins", JSON.stringify(daftar_kepemilikan));
                         localStorage.setItem("p_wann_active_id", id_karakter_terpilih);
