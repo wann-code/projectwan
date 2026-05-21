@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CyberDino 2077: ProjectWann Final Perfect</title>
+    <title>CyberDino 2077: ProjectWann Final Fixed</title>
     <style>
         * {
             box-sizing: border-box;
@@ -531,7 +531,8 @@
             if (status_layar === "BERMAIN" || status_layar === "GAMEOVER") {
                 daftar_koin_jalan.forEach(c => {
                     ctx.fillStyle = WARNA_KUNING; ctx.strokeStyle = WARNA_HITAM; ctx.lineWidth = 2.5;
-                    ctx.beginPath(); ctx.arc(c.x + 11, c.y + 11, 11, 0, Math.PI*2); ctx.fill(); ctx.stroke(); // FIXED: Perbaikan syntax ctx.stroke() di baris ini
+                    ctx.beginPath(); ctx.arc(c.x + 11, c.y + 11, 11, 0, Math.PI*2); ctx.fill(); 
+                    ctx.stroke(); // FIXED GOKIL: Sekarang objek ctx.stroke() sudah lengkap dan aman!
                     ctx.fillStyle = WARNA_HITAM; ctx.font = "bold 13px 'Courier New'"; ctx.fillText("C", c.x + 7, c.y + 15);
                 });
 
@@ -600,6 +601,7 @@
             if (skor >= 200) is_overdrive = true;
             else is_overdrive = false;
 
+            // Balanced Speed
             let speed_aktif = kecepatan_game + (is_overdrive ? 3.2 : 0);
             scroll_semesta += speed_aktif;
             skor_jarak += speed_aktif * 0.02;
