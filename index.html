@@ -2,70 +2,95 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ProjectWann Mecha Race - Fixed Start</title>
+    <title>ProjectWann Mecha Race - FULL UPGRADE</title>
     <style>
-        * { box-sizing: border-box; user-select: none; -webkit-user-select: none; margin: 0; padding: 0; }
-        body { background-color: #0d0c1d; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-        #gameContainer { position: relative; width: 100%; max-width: 800px; aspect-ratio: 800 / 450; background-color: #111; border: 4px solid #000; box-shadow: 10px 10px 0px rgba(0,0,0,0.3); }
-        canvas { width: 100%; height: 100%; display: block; }
-        #mobileControls { display: flex; justify-content: space-between; width: 100%; max-width: 800px; padding: 15px; gap: 20px; }
-        .btn { flex: 1; height: 65px; background: #1a1a2e; border: 3px solid #000; border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; font-family: inherit; display: flex; align-items: center; justify-content: center; box-shadow: 4px 4px 0px #000; }
-        #btnDuck { background: #34495e; }
-        #btnJump { background: #d81b60; }
-        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+        body { background: #0d0c1d; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: 'Courier New', monospace; }
+        canvas { background: #111; border: 4px solid #000; box-shadow: 10px 10px 0px rgba(0,0,0,0.3); width: 800px; height: 450px; }
+        .controls { display: flex; gap: 20px; margin-top: 10px; width: 800px; }
+        button { flex: 1; height: 60px; font-weight: bold; cursor: pointer; border: 2px solid #000; font-size: 18px; }
+        #btnJump { background: #d81b60; color: #fff; }
+        #btnDuck { background: #34495e; color: #fff; }
     </style>
 </head>
 <body>
-    <div id="gameContainer"><canvas id="gameCanvas" width="800" height="450"></canvas></div>
-    <div id="mobileControls">
-        <button class="btn" id="btnDuck">TUNDUK</button>
-        <button class="btn" id="btnJump">LOMPAT</button>
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
+    <div class="controls">
+        <button id="btnDuck">TUNDUK</button>
+        <button id="btnJump">LOMPAT (START)</button>
     </div>
-
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const LEBAR = 800, TINGGI = 450, Y_TANAH = 350;
 
         let status = "MENU", skor = 0, koin = parseInt(localStorage.getItem("p_wann_koin")) || 0;
+        let id_aktif = parseInt(localStorage.getItem("p_wann_active_id")) || 0;
+        let id_menu = id_aktif;
         let dino = { x: 90, y: 294, w: 50, h: 56, velY: 0, menunduk: false };
-        let rintangan = [];
-        
-        function resetGame() {
-            // FIX: Rintangan pertama ditaruh jauh di 1500 agar tidak langsung nabrak
-            rintangan = [{x: 1500, y: 300, w: 25, h: 50, tipe: "laser"}];
-            skor = 0; dino.y = 294;
-        }
+        let rintangan = [{x: 1500, y: 300, w: 30, h: 50}];
+
+        const mecha = [
+            {nama: "Dino Steel", warna: "#bdc3c7"}, {nama: "Neon Viper", warna: "#2ecc71"},
+            {nama: "Crimson", warna: "#e74c3c"}, {nama: "Cyber Panther", warna: "#34495e"},
+            {nama: "Bunny", warna: "#ecf0f1"}, {nama: "Shark", warna: "#1abc9c"},
+            {nama: "Wolf", warna: "#2c3e50"}, {nama: "Gundam", warna: "#3498db"},
+            {nama: "Shinobi", warna: "#2b2b2b"}, {nama: "Wann-Bot", warna: "#9b59b6"}
+        ];
 
         function loop() {
-            ctx.fillStyle = "#0a0a16"; ctx.fillRect(0,0,LEBAR,TINGGI);
+            ctx.fillStyle = "#0a0a16"; ctx.fillRect(0,0,800,450);
             
-            if(status === "BERMAIN") {
+            if (status === "BERMAIN") {
                 skor++;
-                dino.velY += 0.85; dino.y += dino.velY;
-                if(dino.y > 350 - dino.h) { dino.y = 350 - dino.h; dino.velY = 0; }
+                dino.velY += 0.8; dino.y += dino.velY;
+                if (dino.y > 294) { dino.y = 294; dino.velY = 0; }
                 
                 rintangan.forEach(r => {
-                    r.x -= 7;
-                    if(r.x < -50) r.x = 1000 + Math.random() * 500;
-                    if(dino.x < r.x + r.w && dino.x + dino.w > r.x && dino.y < r.y + r.h && dino.y + dino.h > r.y) status = "GAMEOVER";
+                    r.x -= (7 + skor/1000);
+                    if (r.x < -50) r.x = 1000 + Math.random() * 500;
+                    if (dino.x < r.x + r.w && dino.x + dino.w > r.x && dino.y < r.y + r.h && dino.y + dino.h > r.y) status = "GAMEOVER";
                 });
             }
 
-            // Draw
-            ctx.fillStyle = "#bdc3c7"; ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
-            ctx.fillStyle = "#d81b60"; rintangan.forEach(r => ctx.fillRect(r.x, r.y, r.w, r.h));
-            ctx.fillStyle = "#fff"; ctx.fillText("SKOR: "+Math.floor(skor/10), 20, 30);
+            // GAMBAR DINO (Sesuai Mecha aktif)
+            ctx.fillStyle = mecha[id_aktif].warna;
+            ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
             
-            if(status !== "BERMAIN") ctx.fillText("PRESS LOMPAT TO START", 300, 225);
+            // GAMBAR LASER
+            ctx.fillStyle = "#d81b60"; 
+            rintangan.forEach(r => ctx.fillRect(r.x, r.y, r.w, r.h));
+            
+            // HUD & MENU TOKO
+            ctx.fillStyle = "#fff"; ctx.font = "20px monospace";
+            ctx.fillText("SKOR: " + Math.floor(skor/10) + " | KOIN: " + koin, 20, 30);
+            
+            if (status === "MENU") {
+                ctx.fillStyle = "#f1c40f"; ctx.font = "bold 30px monospace";
+                ctx.fillText("SHOP: " + mecha[id_menu].nama, 250, 150);
+                ctx.fillStyle = "#fff"; ctx.fillText("KIRI/KANAN UNTUK PILIH | LOMPAT UNTUK START", 100, 200);
+            }
+            if (status === "GAMEOVER") {
+                ctx.fillStyle = "#ff0000"; ctx.fillText("CRITICAL ERROR! TAP LOMPAT", 250, 225);
+            }
+
             requestAnimationFrame(loop);
         }
 
-        document.getElementById("btnJump").onmousedown = () => { if(status!=="BERMAIN") { resetGame(); status="BERMAIN"; } else dino.velY = -14; };
-        document.getElementById("btnDuck").onmousedown = () => { dino.menunduk=true; dino.h=34; dino.y=316; };
-        document.getElementById("btnDuck").onmouseup = () => { dino.menunduk=false; dino.h=56; dino.y=294; };
+        // INPUT
+        document.getElementById("btnJump").onmousedown = () => {
+            if (status !== "BERMAIN") { 
+                if (status === "MENU") id_aktif = id_menu; // EQUIP
+                status = "BERMAIN"; skor = 0; rintangan[0].x = 1500; 
+            } else dino.velY = -14;
+        };
         
+        // NAVIGASI TOKO (Tombol Duck jadi kiri/kanan di menu)
+        document.getElementById("btnDuck").onmousedown = () => {
+            if (status === "MENU") { 
+                id_menu = (id_menu === 0) ? 9 : id_menu - 1; 
+            } else { dino.menunduk=true; dino.h=34; dino.y=316; }
+        };
+        document.getElementById("btnDuck").onmouseup = () => { dino.menunduk=false; dino.h=56; dino.y=294; };
+
         loop();
     </script>
 </body>
