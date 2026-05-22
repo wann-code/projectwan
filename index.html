@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Untuk Citra 🪷</title>
+    <title>Untuk Kamu 🪷</title>
     <style>
         body {
             margin: 0;
@@ -12,7 +12,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #ffe6f2 0%, #ff99c2 100%);
+            /* Background Polkadot Lembut */
+            background-color: #ffe6f2;
+            background-image: radial-gradient(#ffb3d1 2px, transparent 2px);
+            background-size: 30px 30px;
             font-family: 'Arial', sans-serif;
             overflow: hidden;
             text-align: center;
@@ -23,24 +26,44 @@
         /* Animasi Bunga Lili Terbang */
         .lili-jatuh {
             position: absolute;
-            font-size: 24px;
             opacity: 0.5;
             animation: terbang 12s linear infinite;
             z-index: 1;
         }
         @keyframes terbang {
             0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.6; }
-            90% { opacity: 0.6; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
             100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Kontainer Teks Utama */
-        .content {
+        /* Kotak Kaca (Glassmorphism) biar layar gak kosong */
+        .glass-box {
             z-index: 10;
-            padding: 30px;
-            max-width: 400px;
-            transition: opacity 1s ease-in-out;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 40px 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(255, 105, 180, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            width: 85%;
+            max-width: 380px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Hiasan Sudut Kotak */
+        .glass-box::before {
+            content: "🪷";
+            position: absolute;
+            top: -20px;
+            font-size: 40px;
+            text-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
         }
 
         .text-step {
@@ -48,28 +71,23 @@
             line-height: 1.6;
             font-weight: bold;
             display: none;
-            text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.7);
         }
 
         .active {
             display: block;
-            animation: fadeInOut 2.5s ease-in-out forwards;
+            animation: fadeInOut 2s ease-in-out forwards;
         }
 
         @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(15px); }
-            100% { opacity: 1; transform: translateY(0); }
+            0% { opacity: 0; transform: translateY(10px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         /* Halaman Final / Confession */
         .final-card {
             display: none;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(214, 51, 132, 0.3);
-            border: 2px solid #ffb3d1;
-            animation: fadeIn 2s ease-in forwards;
+            width: 100%;
+            animation: fadeIn 1.5s ease-in forwards;
         }
         
         .final-card p {
@@ -77,22 +95,24 @@
             color: #555;
             font-weight: normal;
             line-height: 1.6;
+            margin: 10px 0;
         }
 
         .gif-container img {
-            width: 150px;
+            width: 140px;
             border-radius: 15px;
             margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .tap-hint {
-            position: fixed;
-            bottom: 30px;
+            position: absolute;
+            bottom: -40px;
+            width: 100%;
             font-size: 14px;
             color: #ff4d94;
-            opacity: 0.7;
+            font-weight: bold;
             animation: pulse 2s infinite;
-            z-index: 5;
         }
 
         /* Tombol Penutup */
@@ -100,92 +120,98 @@
             background-color: #ff66a3;
             color: white;
             padding: 12px 25px;
-            font-size: 16px;
+            font-size: 15px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
             font-weight: bold;
-            margin-top: 20px;
+            margin-top: 15px;
             box-shadow: 0 4px 10px rgba(255, 102, 163, 0.4);
             transition: all 0.3s ease;
+            width: 100%;
         }
         button:hover {
             background-color: #ff4d94;
-            transform: translateY(-2px);
         }
         button:active {
-            transform: translateY(2px) scale(0.95);
+            transform: scale(0.95);
         }
 
         @keyframes pulse {
-            0% { opacity: 0.4; }
-            50% { opacity: 1; }
-            100% { opacity: 0.4; }
+            0% { opacity: 0.5; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-3px); }
+            100% { opacity: 0.5; transform: translateY(0); }
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body onclick="nextStep()">
 
-    <div class="tap-hint" id="tap-hint">Tap layar untuk lanjut ya 👆</div>
-
-    <div class="content" id="main-content">
-        <!-- Rangkaian Teks Awal -->
-        <div class="text-step active">Hai, <span style="color: #ff1a75;">[Citra Aghista Lestari]</span>... 🪷</div>
-        <div class="text-step">Mungkin ini agak tiba-tiba ya wkwk...</div>
-        <div class="text-step">Tapi tolong dibaca sampai habis ya...</div>
-        <div class="text-step">Sebenernya...</div>
-        <div class="text-step">Ada sesuatu yang pengen gua sampein ke lu...</div>
-    </div>
-
-    <!-- Halaman Surat Terakhir -->
-    <div class="content final-card" id="final-card">
-        <div id="isi-surat">
-            <div class="gif-container">
-                <img src="https://media.tenor.com/b_8-g-Uteb4AAAAi/peach-cat-flower.gif" alt="Cute Flower">
-            </div>
-            <h2 style="color: #d63384; margin-top: 0;">Gua suka sama lu... 🪷</h2>
-            <p>
-                Mungkin lu udh tau? dari perilaku gua yg aneh ke lu wkwk yg tiba tiba ngasih sesuatu, suka like in postingan lu dan lain lain, ya gua kagum dan suka sama lu mungkin terkesan agak aneh tapi kenyataannya emnag gini... 
-            </p>
-            <p>
-                Gua cuma mau ngungkapin biar lega, dan funfact nih ya gua kalo liat lu gabisa nahan senyum mungkin salting kali ya hehe gatau kenapa begitu
-            </p>
-            <button onclick="tutupSurat(event)">Makasih udah baca ya 🪷</button>
-        </div>
+    <div class="glass-box">
         
-        <!-- Pesan Penutup Setelah Tombol Dipencet -->
-        <div id="pesan-penutup" style="display: none;">
-            <div class="gif-container">
-                <img src="https://media.tenor.com/QhXjH8I06ZcAAAAi/cute-bear.gif" alt="Happy GIF">
-            </div>
-            <h2 style="color: #d63384;">Semoga harimu indah! ✨</h2>
-            <p>Makasih udah dengerin perasaan gua. Jangan lupa senyum hari ini ya cit!</p>
+        <div id="main-content">
+            <!-- Rangkaian Teks Awal -->
+            <div class="text-step active">Hai, <br><span style="color: #ff1a75; font-size: 28px;">[Nama Dia]</span> ✨</div>
+            <div class="text-step">Mungkin ini agak tiba-tiba...</div>
+            <div class="text-step">Tapi tolong dibaca<br>sampai habis ya...</div>
+            <div class="text-step">Sebenernya...</div>
+            <div class="text-step">Ada sesuatu yang pengen aku sampein ke kamu...</div>
         </div>
+
+        <!-- Halaman Surat Terakhir -->
+        <div class="final-card" id="final-card">
+            <div id="isi-surat">
+                <div class="gif-container">
+                    <img src="https://media.tenor.com/b_8-g-Uteb4AAAAi/peach-cat-flower.gif" alt="Cute Flower">
+                </div>
+                <h2 style="color: #d63384; margin-top: 0; font-size: 22px;">Aku suka sama kamu 🪷</h2>
+                <p>
+                    Udah lumayan lama aku nyimpen perasaan ini. Kamu nggak usah merasa terbebani buat jawab kok. 
+                </p>
+                <p>
+                    Aku cuma mau ngungkapin biar lega, dan mau bilang makasih karena kamu udah selalu bikin aku senyum akhir-akhir ini 😊
+                </p>
+                <button onclick="tutupSurat(event)">Makasih udah baca ya 🪷</button>
+            </div>
+            
+            <!-- Pesan Penutup Setelah Tombol Dipencet -->
+            <div id="pesan-penutup" style="display: none;">
+                <div class="gif-container">
+                    <img src="https://media.tenor.com/QhXjH8I06ZcAAAAi/cute-bear.gif" alt="Happy GIF">
+                </div>
+                <h2 style="color: #d63384; font-size: 22px;">Semoga harimu indah! ✨</h2>
+                <p>Makasih udah dengerin perasaanku. Jangan lupa senyum hari ini!</p>
+            </div>
+        </div>
+
+        <!-- Hint untuk tap layar -->
+        <div class="tap-hint" id="tap-hint">👆 Tap kotak ini untuk lanjut</div>
     </div>
 
     <script>
         // Bikin Bunga Lili Terbang
         function createLilies(jumlah) {
             const body = document.querySelector('body');
-            const icons = ['🪷', '🌸', '✨'];
+            const icons = ['🪷', '🌸', '✨', '🤍'];
             for (let i = 0; i < jumlah; i++) {
                 let lili = document.createElement('div');
                 lili.className = 'lili-jatuh';
                 lili.innerText = icons[Math.floor(Math.random() * icons.length)];
                 lili.style.left = Math.random() * 100 + 'vw';
+                // Ukuran random biar variatif
+                lili.style.fontSize = (Math.random() * 20 + 15) + 'px'; 
                 lili.style.animationDuration = (Math.random() * 5 + 8) + 's'; 
                 lili.style.animationDelay = Math.random() * 5 + 's';
                 body.appendChild(lili);
             }
         }
         
-        // Bikin 15 bunga di awal
-        createLilies(15);
+        // Bikin 25 bunga/hiasan di awal biar layar kerasa penuh
+        createLilies(25);
 
         let currentStep = 0;
         const steps = document.querySelectorAll('.text-step');
@@ -216,15 +242,10 @@
 
         // Fungsi Tombol Penutup
         function tutupSurat(event) {
-            // Biar ga bentrok sama event tap di background
             event.stopPropagation(); 
-            
-            // Ganti surat jadi pesan penutup manis
             document.getElementById('isi-surat').style.display = 'none';
             document.getElementById('pesan-penutup').style.display = 'block';
-            
-            // Tambahin bunga lili meledak / lebih banyak di background
-            createLilies(20);
+            createLilies(30); // Tambah partikel saat selesai
         }
     </script>
 </body>
