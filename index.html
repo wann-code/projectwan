@@ -12,7 +12,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Background Polkadot Lembut */
             background-color: #ffe6f2;
             background-image: radial-gradient(#ffb3d1 2px, transparent 2px);
             background-size: 30px 30px;
@@ -37,7 +36,7 @@
             100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Kotak Kaca (Glassmorphism) biar layar gak kosong */
+        /* Kotak Kaca */
         .glass-box {
             z-index: 10;
             background: rgba(255, 255, 255, 0.7);
@@ -49,7 +48,7 @@
             border: 2px solid rgba(255, 255, 255, 0.9);
             width: 85%;
             max-width: 380px;
-            min-height: 250px;
+            min-height: 300px; /* Ditinggikan sedikit buat tempat karakter */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -57,13 +56,11 @@
             position: relative;
         }
 
-        /* Hiasan Sudut Kotak */
-        .glass-box::before {
-            content: "🪷";
-            position: absolute;
-            top: -20px;
-            font-size: 40px;
-            text-shadow: 0 5px 15px rgba(255, 105, 180, 0.3);
+        /* Karakter Lucu di atas Teks Awal */
+        .intro-gif img {
+            width: 130px;
+            margin-bottom: 20px;
+            border-radius: 15px;
         }
 
         .text-step {
@@ -75,7 +72,7 @@
 
         .active {
             display: block;
-            animation: fadeInOut 2s ease-in-out forwards;
+            animation: fadeInOut 1.5s ease-in-out forwards;
         }
 
         @keyframes fadeInOut {
@@ -154,6 +151,11 @@
     <div class="glass-box">
         
         <div id="main-content">
+            <!-- Karakter Beruang Malu-malu di Atas Teks -->
+            <div class="intro-gif">
+                <img src="https://media.tenor.com/81BEnx_N9U4AAAAi/tkthao219-bubududu.gif" alt="Cute Shy Bear">
+            </div>
+
             <!-- Rangkaian Teks Awal -->
             <div class="text-step active">Hai, <br><span style="color: #ff1a75; font-size: 28px;">[Nama Dia]</span> ✨</div>
             <div class="text-step">Mungkin ini agak tiba-tiba...</div>
@@ -166,7 +168,7 @@
         <div class="final-card" id="final-card">
             <div id="isi-surat">
                 <div class="gif-container">
-                    <img src="https://media.tenor.com/b_8-g-Uteb4AAAAi/peach-cat-flower.gif" alt="Cute Flower">
+                    <img src="https://media.tenor.com/b_8-g-Uteb4AAAAi/peach-cat-flower.gif" alt="Cute Flower Cat">
                 </div>
                 <h2 style="color: #d63384; margin-top: 0; font-size: 22px;">Aku suka sama kamu 🪷</h2>
                 <p>
@@ -202,7 +204,6 @@
                 lili.className = 'lili-jatuh';
                 lili.innerText = icons[Math.floor(Math.random() * icons.length)];
                 lili.style.left = Math.random() * 100 + 'vw';
-                // Ukuran random biar variatif
                 lili.style.fontSize = (Math.random() * 20 + 15) + 'px'; 
                 lili.style.animationDuration = (Math.random() * 5 + 8) + 's'; 
                 lili.style.animationDelay = Math.random() * 5 + 's';
@@ -210,7 +211,6 @@
             }
         }
         
-        // Bikin 25 bunga/hiasan di awal biar layar kerasa penuh
         createLilies(25);
 
         let currentStep = 0;
@@ -245,7 +245,7 @@
             event.stopPropagation(); 
             document.getElementById('isi-surat').style.display = 'none';
             document.getElementById('pesan-penutup').style.display = 'block';
-            createLilies(30); // Tambah partikel saat selesai
+            createLilies(30); 
         }
     </script>
 </body>
