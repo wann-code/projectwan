@@ -3,58 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ada pesan buat kamu 🪷</title>
+    <title>Untuk Citra 🪷</title>
     <style>
         body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            /* Background gradasi pink yang estetik */
-            background: linear-gradient(135deg, #ffe6f2 0%, #ffb3d1 100%);
+            background: linear-gradient(135deg, #ffe6f2 0%, #ff99c2 100%);
             font-family: 'Arial', sans-serif;
+            overflow: hidden;
             text-align: center;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
-            color: #333;
+            color: #d63384;
+            cursor: pointer;
         }
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 35px 25px;
-            border-radius: 20px;
-            box-shadow: 0 15px 25px rgba(255, 105, 180, 0.2);
-            max-width: 400px;
-            width: 100%;
-            border: 2px solid #ffcce0;
-        }
-        h1 {
-            color: #d63384; /* Warna pink tua untuk judul */
-            margin-bottom: 10px;
+
+        /* Animasi Bunga Lili Terbang */
+        .lili-jatuh {
+            position: absolute;
             font-size: 24px;
+            opacity: 0.5;
+            animation: terbang 12s linear infinite;
+            z-index: 1;
         }
-        p {
-            font-size: 16px;
+        @keyframes terbang {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Kontainer Teks Utama */
+        .content {
+            z-index: 10;
+            padding: 30px;
+            max-width: 400px;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .text-step {
+            font-size: 22px;
             line-height: 1.6;
-            color: #555;
-            margin-bottom: 20px;
+            font-weight: bold;
+            display: none;
+            text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.7);
         }
+
+        .active {
+            display: block;
+            animation: fadeInOut 2.5s ease-in-out forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Halaman Final / Confession */
+        .final-card {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(214, 51, 132, 0.3);
+            border: 2px solid #ffb3d1;
+            animation: fadeIn 2s ease-in forwards;
+        }
+        
+        .final-card p {
+            font-size: 16px;
+            color: #555;
+            font-weight: normal;
+            line-height: 1.6;
+        }
+
         .gif-container img {
-            width: 160px;
+            width: 150px;
             border-radius: 15px;
             margin-bottom: 15px;
         }
+
+        .tap-hint {
+            position: fixed;
+            bottom: 30px;
+            font-size: 14px;
+            color: #ff4d94;
+            opacity: 0.7;
+            animation: pulse 2s infinite;
+            z-index: 5;
+        }
+
+        /* Tombol Penutup */
         button {
-            background-color: #ff66a3; /* Warna pink cerah untuk tombol */
+            background-color: #ff66a3;
             color: white;
-            padding: 14px 35px;
+            padding: 12px 25px;
             font-size: 16px;
             border: none;
-            border-radius: 30px;
+            border-radius: 25px;
             cursor: pointer;
             font-weight: bold;
-            box-shadow: 0 6px 12px rgba(255, 102, 163, 0.4);
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(255, 102, 163, 0.4);
             transition: all 0.3s ease;
         }
         button:hover {
@@ -64,61 +116,116 @@
         button:active {
             transform: translateY(2px) scale(0.95);
         }
-        /* Efek Muncul Pelan-pelan */
-        .fade-in {
-            animation: fadeIn 1.5s ease-in forwards;
+
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .hidden {
-            display: none !important;
-        }
-        .nama-highlight {
-            color: #ff4d94;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .flower-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
-<body>
+<body onclick="nextStep()">
 
-    <div class="card" id="halaman-depan">
-        <div class="flower-icon">🪷✨</div>
-        <h1>Hai, <br>
-            <span class="nama-highlight">Nama Dia Di Sini</span>
-        </h1>
-        <p>Aku ada sesuatu nih buat kamu.</p>
-        <button onclick="bukaPesan()">Buka Pesannya 💌</button>
+    <div class="tap-hint" id="tap-hint">Tap layar untuk lanjut ya 👆</div>
+
+    <div class="content" id="main-content">
+        <!-- Rangkaian Teks Awal -->
+        <div class="text-step active">Hai, <span style="color: #ff1a75;">[Citra Aghista Lestari]</span>... 🪷</div>
+        <div class="text-step">Mungkin ini agak tiba-tiba ya wkwk...</div>
+        <div class="text-step">Tapi tolong dibaca sampai habis ya...</div>
+        <div class="text-step">Sebenernya...</div>
+        <div class="text-step">Ada sesuatu yang pengen gua sampein ke lu...</div>
     </div>
 
-    <div class="card hidden" id="halaman-pesan">
-        <div class="gif-container">
-            <img src="https://media.tenor.com/b_8-g-Uteb4AAAAi/peach-cat-flower.gif" alt="Cute Flower GIF">
+    <!-- Halaman Surat Terakhir -->
+    <div class="content final-card" id="final-card">
+        <div id="isi-surat">
+            <div class="gif-container">
+                <img src="https://media.tenor.com/b_8-g-Uteb4AAAAi/peach-cat-flower.gif" alt="Cute Flower">
+            </div>
+            <h2 style="color: #d63384; margin-top: 0;">Gua suka sama lu... 🪷</h2>
+            <p>
+                Mungkin lu udh tau? dari perilaku gua yg aneh ke lu wkwk yg tiba tiba ngasih sesuatu, suka like in postingan lu dan lain lain, ya gua kagum dan suka sama lu mungkin terkesan agak aneh tapi kenyataannya emnag gini... 
+            </p>
+            <p>
+                Gua cuma mau ngungkapin biar lega, dan funfact nih ya gua kalo liat lu gabisa nahan senyum mungkin salting kali ya hehe gatau kenapa begitu
+            </p>
+            <button onclick="tutupSurat(event)">Makasih udah baca ya 🪷</button>
         </div>
-        <h2 style="color: #d63384;">Sebenernya... 🪷</h2>
         
-        <p>
-            Aku cuma mau jujur aja. Udah lumayan lama aku nyimpen perasaan buat kamu, dan aku suka sama kamu hehe. 
-        </p>
-        <p>
-            Kamu gak usah merasa terbebani atau bingung harus jawab apa kok. Aku cuma mau ngungkapin biar lega aja. Makasih ya udah selalu bikin aku senyum akhir-akhir ini! 😊
-        </p>
+        <!-- Pesan Penutup Setelah Tombol Dipencet -->
+        <div id="pesan-penutup" style="display: none;">
+            <div class="gif-container">
+                <img src="https://media.tenor.com/QhXjH8I06ZcAAAAi/cute-bear.gif" alt="Happy GIF">
+            </div>
+            <h2 style="color: #d63384;">Semoga harimu indah! ✨</h2>
+            <p>Makasih udah dengerin perasaan gua. Jangan lupa senyum hari ini ya cit!</p>
         </div>
+    </div>
 
     <script>
-        function bukaPesan() {
-            document.getElementById('halaman-depan').classList.add('hidden');
-            const halamanPesan = document.getElementById('halaman-pesan');
-            halamanPesan.classList.remove('hidden');
-            halamanPesan.classList.add('fade-in');
+        // Bikin Bunga Lili Terbang
+        function createLilies(jumlah) {
+            const body = document.querySelector('body');
+            const icons = ['🪷', '🌸', '✨'];
+            for (let i = 0; i < jumlah; i++) {
+                let lili = document.createElement('div');
+                lili.className = 'lili-jatuh';
+                lili.innerText = icons[Math.floor(Math.random() * icons.length)];
+                lili.style.left = Math.random() * 100 + 'vw';
+                lili.style.animationDuration = (Math.random() * 5 + 8) + 's'; 
+                lili.style.animationDelay = Math.random() * 5 + 's';
+                body.appendChild(lili);
+            }
+        }
+        
+        // Bikin 15 bunga di awal
+        createLilies(15);
+
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.text-step');
+        const mainContent = document.getElementById('main-content');
+        const finalCard = document.getElementById('final-card');
+        const tapHint = document.getElementById('tap-hint');
+        let isFinished = false;
+
+        function nextStep() {
+            if (isFinished) return; 
+
+            if (currentStep < steps.length) {
+                steps[currentStep].classList.remove('active');
+            }
+
+            currentStep++;
+
+            if (currentStep < steps.length) {
+                steps[currentStep].classList.add('active');
+            } else {
+                mainContent.style.display = 'none';
+                tapHint.style.display = 'none'; 
+                finalCard.style.display = 'block';
+                isFinished = true;
+                document.body.style.cursor = 'default';
+            }
+        }
+
+        // Fungsi Tombol Penutup
+        function tutupSurat(event) {
+            // Biar ga bentrok sama event tap di background
+            event.stopPropagation(); 
+            
+            // Ganti surat jadi pesan penutup manis
+            document.getElementById('isi-surat').style.display = 'none';
+            document.getElementById('pesan-penutup').style.display = 'block';
+            
+            // Tambahin bunga lili meledak / lebih banyak di background
+            createLilies(20);
         }
     </script>
-
 </body>
 </html>
