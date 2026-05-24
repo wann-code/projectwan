@@ -20,6 +20,7 @@
             text-align: center;
             color: #d63384;
             cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .lili-jatuh {
@@ -63,6 +64,7 @@
             width: 130px;
             margin-bottom: 20px;
             border-radius: 15px;
+            pointer-events: none;
         }
 
         .text-step {
@@ -70,6 +72,7 @@
             line-height: 1.6;
             font-weight: bold;
             display: none;
+            pointer-events: none;
         }
 
         .active {
@@ -119,6 +122,8 @@
             box-shadow: 0 4px 10px rgba(255, 102, 163, 0.4);
             transition: all 0.3s ease;
             width: 100%;
+            position: relative;
+            z-index: 20;
         }
         button:hover {
             background-color: #ff4d94;
@@ -141,7 +146,7 @@
 </head>
 <body onclick="nextStep()">
 
-    <audio id="bg-music" src="lagu.mp3" loop></audio>
+    <audio id="bg-music" src="lagu.mp3" preload="auto" loop></audio>
 
     <div class="glass-box">
         
@@ -213,18 +218,8 @@
         const tapHint = document.getElementById('tap-hint');
         let isFinished = false;
 
-        // Script untuk nyalain lagu pas di tap
-        const bgMusic = document.getElementById('bg-music');
-        let isMusicPlaying = false;
-
         function nextStep() {
             if (isFinished) return; 
-
-            // Play lagu kalau belum muter
-            if (!isMusicPlaying) {
-                bgMusic.play().catch(error => console.log("Autoplay dicegah browser, nunggu tap berikutnya"));
-                isMusicPlaying = true;
-            }
 
             if (currentStep < steps.length) {
                 steps[currentStep].classList.remove('active');
@@ -240,6 +235,7 @@
                 finalCard.style.display = 'block';
                 isFinished = true;
                 document.body.style.cursor = 'default';
+                
                 const bgMusic = document.getElementById('bg-music');
                 bgMusic.play();
             }
