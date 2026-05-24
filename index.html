@@ -22,7 +22,6 @@
             cursor: pointer;
         }
 
-        /* Animasi Bunga Lili Terbang */
         .lili-jatuh {
             position: absolute;
             opacity: 0.5;
@@ -36,7 +35,6 @@
             100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
         }
 
-        /* Kotak Kaca */
         .glass-box {
             z-index: 10;
             background: rgba(255, 255, 255, 0.7);
@@ -56,7 +54,6 @@
             position: relative;
         }
 
-        /* Karakter Lucu */
         .intro-gif {
             display: flex;
             justify-content: center;
@@ -85,7 +82,6 @@
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Halaman Final / Confession */
         .final-card {
             display: none;
             width: 100%;
@@ -110,7 +106,6 @@
             animation: pulse 2s infinite;
         }
 
-        /* Tombol Penutup */
         button {
             background-color: #ff66a3;
             color: white;
@@ -146,6 +141,8 @@
 </head>
 <body onclick="nextStep()">
 
+    <audio id="bg-music" src="lagu.mp3" loop></audio>
+
     <div class="glass-box">
         
         <div id="main-content">
@@ -154,24 +151,27 @@
             </div>
 
             <div class="text-step active">Hai, <br><span style="color: #ff1a75; font-size: 28px;">Citra Aghista Lestari</span> ✨</div>
-            <div class="text-step">Sorry ya kalau lu mungki kaget atau merasa aneh dapet link random dari gua hehe</div>
-            <div class="text-step">Kita emang jarang chatan dan jarang interaksi...<br>Tapi tolong dibaca bentar ya</div>
+            <div class="text-step">Sorry ya kalau mungkin lu kaget atau merasa aneh dapet link random ini dari gua hehe</div>
+            <div class="text-step">Kita emang jarang chatan dan jarang interaksi...</div>
+            <div class="text-step">Tapi tolong dibaca sebentar ya.</div>
             <div class="text-step">Sebenernya...</div>
-            <div class="text-step">Ada sesuatu yang pengen gua kasih tau ke lu...</div>
+            <div class="text-step">Ada sesuatu yang pengen gua kasih tau ke lu</div>
         </div>
 
         <div class="final-card" id="final-card">
+            
             <div id="isi-surat">
                 <div class="intro-gif">
                     <img src="beruang-surat.gif" alt="Cute Bear Letter">
                 </div>
                 <h2 style="color: #d63384; margin-top: 0; font-size: 22px;">Yap, gua suka sama lu... 🪷</h2>
                 <p>
-                    Iya, gua tau ini random banget wkwk udah lumayan lama gua diem-diem merhatiin lu dan kagum sama lu
+                    Iya, gua tau ini random banget wkwk udh lumayan lama gua diem diem merhatiin lu dan kagum sama lu
                 </p>
                 <p>
                     Gua cuma pengen ngungkapin ini biar lega aja kok, gada maksud bikin lu risih. Lu santai aja, gak usah ngerasa gak enak atau bingung harus bales apa. Anggap aja lu dapet pujian random hari ini dari fans lu. Makasih ya udah nyempetin baca! 😊
                 </p>
+                
                 <button onclick="tutupSurat(event)">Tutup suratnya 🪷</button>
             </div>
             
@@ -179,12 +179,13 @@
                 <div class="intro-gif">
                     <img src="beruang-akhir.gif" alt="Cute Bear Ending">
                 </div>
-                <h2 style="color: #d63384; font-size: 22px;">Udah ah, deg-degan! 🏳️</h2>
+                <h2 style="color: #d63384; font-size: 22px;">Udah ah, deg-degan! sdgqidwofp🏳️</h2>
                 <p>Gak tau deh tadi gua kesambet apaan sampe berani ngirim ginian. Udah ah, bye! Jangan lupa senyum hari ini ya citraa 🪷</p>
             </div>
+
         </div>
 
-        <div class="tap-hint" id="tap-hint">👆 Tap kotak ini untuk lanjut</div>
+        <div class="tap-hint" id="tap-hint">👆 Tap layar untuk lanjut</div>
     </div>
 
     <script>
@@ -212,8 +213,18 @@
         const tapHint = document.getElementById('tap-hint');
         let isFinished = false;
 
+        // Script untuk nyalain lagu pas di tap
+        const bgMusic = document.getElementById('bg-music');
+        let isMusicPlaying = false;
+
         function nextStep() {
             if (isFinished) return; 
+
+            // Play lagu kalau belum muter
+            if (!isMusicPlaying) {
+                bgMusic.play().catch(error => console.log("Autoplay dicegah browser, nunggu tap berikutnya"));
+                isMusicPlaying = true;
+            }
 
             if (currentStep < steps.length) {
                 steps[currentStep].classList.remove('active');
